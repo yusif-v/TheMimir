@@ -1,0 +1,4 @@
+requests
+gradio
+python-dotenv
+prompt_toolkit~=3.0.52
