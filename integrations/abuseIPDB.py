@@ -20,13 +20,11 @@ load_dotenv()
 API_KEY = os.getenv("ABUSE_API_KEY")
 API_URL = "https://api.abuseipdb.com/api/v2/check"
 
-# IP address regex (valid IPv4)
 IP_REGEX = re.compile(
     r"^(?:(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.){3}"
     r"(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)$"
 )
 
-# Backward compatibility alias
 ip_regex = IP_REGEX
 
 
@@ -35,18 +33,6 @@ ip_regex = IP_REGEX
 # -------------------------------------------------------------------
 
 def abuse_ip(ip_address: str, return_json: bool = False):
-    """
-    Query AbuseIPDB for an IP reputation report.
-
-    Args:
-        ip_address (str): Target IP to query.
-        return_json (bool): If True, return data as dict instead of printing.
-
-    Returns:
-        dict | None: Parsed AbuseIPDB data, or None on error.
-    """
-
-    # --- Validation ---
     if not API_KEY:
         print("[!] Missing API key. Set ABUSE_API_KEY in your environment or .env file.")
         return None
@@ -140,7 +126,6 @@ def _print_abuse_report(data: dict):
 
         console.print("=" * 60 + "\n")
 
-    # --- Fallback mode: plain text ---
     else:
         print("=" * 60)
         print("ABUSEIPDB IP REPUTATION REPORT")

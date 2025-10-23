@@ -3,20 +3,35 @@ import getpass
 import shlex
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
-from .history import HistoryManager
+
+from cli.history import HistoryManager
 from .handler import CommandHandler
 from .case import CaseManager
 from .prompt import Prompt
 from .completer import MimirCompleter
 from integrations import abuseIPDB, urlHaus, malwareBazaar
 
+try:
+    from .setup import SetupManager
+except ImportError:
+    SetupManager = None
+
+
 def mimir():
-    # === Environment setup ===
     base_path = os.path.expanduser(os.getenv("MIMIR_PATH", "~/Mimir"))
     history_file = os.path.expanduser(os.getenv("MIMIR_HIST", "~/.mimir_history"))
     user = getpass.getuser()
 
-    # === Core components ===
+    if SetupManager:
+        setup = SetupManager()
+        success, messages = setup.setup()
+        if messages and not success:
+            # Only print setup warnings/errors
+            print("\n--- Mimir Setup Diagnostics ---")
+            for msg in messages:
+                print(msg)
+            print("-------------------------------\n")
+
     commands = [
         "help", "exit", "clear", "mhistory",
         "case", "hash", "ipcheck", "urlcheck", "lookup"
@@ -45,7 +60,6 @@ def mimir():
     current_case = None
 
     while True:
-        # Dynamic prompt
         prompt_text = Prompt.get_prompt(user, case_manager.current_case)
         session.message = prompt_text
 
@@ -58,13 +72,12 @@ def mimir():
         if not raw:
             continue
 
-        # Save to history
         history_manager.save_history(raw)
 
         try:
             parts = shlex.split(raw)
         except ValueError as e:
-            print(f"Error parsing command: {e}")
+            print(f"[!] Error parsing command: {e}")
             continue
 
         if not parts:
@@ -72,44 +85,6 @@ def mimir():
 
         command, *args = parts
 
-        # === Built-in commands ===
-        if command in ("exit", "quit"):
-            print("Goodbye, examiner.")
-            break
-
-        elif command == "clear":
-            os.system("clear" if os.name == "posix" else "cls")
-            continue
-
-        elif command == "help":
-            print("""Available commands:
-  case create <name>       Create new forensic case
-  case open <name>         Open existing case
-  case close               Close current case
-  case list                List all cases
-  case info [name]         Show case metadata
-  hash <file>              Compute file hashes
-  ipcheck <ip>             Lookup IP in AbuseIPDB
-  urlcheck <url>           Lookup URL in URLHaus
-  lookup <artifact>        Auto-detect and lookup hash/IP/URL
-  clear                    Clear the screen
-  mhistory                 Show command history
-  exit / quit              Exit the shell
-""")
-            continue
-
-        elif command == "case":
-            if not args:
-                print("Usage: case <create|open|close|list|info> [name]")
-                continue
-
-            action = args[0]
-            case_name = args[1] if len(args) > 1 else None
-            result = case_manager.handle(case_name, action)
-            current_case = result or case_manager.current_case
-            continue
-
-        # === Delegate other commands to CommandHandler ===
         try:
             continue_shell, current_case = command_handler.execute(
                 command, args, case_manager, current_case
@@ -118,6 +93,7 @@ def mimir():
                 break
         except Exception as e:
             print(f"[!] Command error: {e}")
+
 
 if __name__ == "__main__":
     mimir()

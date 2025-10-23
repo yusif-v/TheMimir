@@ -5,11 +5,6 @@ from dotenv import load_dotenv
 from typing import List, Tuple
 
 class SetupManager:
-    """
-    Handles environment bootstrap for the Mimir forensic terminal.
-    Creates folder structure, .env, and Python venv as needed.
-    """
-
     def __init__(self):
         self.home_dir = os.path.expanduser("~")
         self.project_dir = os.path.join(self.home_dir, "Mimir")
@@ -22,7 +17,6 @@ class SetupManager:
 
     # -------------------------------------------------------------
     def create_structure(self) -> List[str]:
-        """Create folders and .env file if missing."""
         messages = []
 
         if not os.path.exists(self.project_dir):
@@ -61,7 +55,6 @@ class SetupManager:
                 return messages
 
         if os.path.exists(self.flag_file):
-            # nothing new to report
             return messages
 
         pip_exec = (
@@ -113,10 +106,8 @@ class SetupManager:
         messages.extend(self.setup_venv())
         messages.extend(self.check_env())
 
-        # Determine if setup is completely clean
         success = not any("❌" in msg or "Missing" in msg for msg in messages)
 
-        # Silence output if everything is fine (user sees nothing)
         if success and not messages:
             return True, []
 
@@ -130,14 +121,15 @@ class SetupManager:
 # -------------------------------------------------------------
 if __name__ == "__main__":
     setup_manager = SetupManager()
-    success, messages = setup_manager.setup()
+    mssgs: list[str]
+    sccss, mssgs = setup_manager.setup()
 
-    if messages:  # only print if something actually happened
+    if mssgs:
         print("\n--- Mimir Setup Summary ---")
-        for msg in messages:
-            print(msg)
+        for MSG in mssgs:
+            print(MSG)
         print("----------------------------")
-        if success:
+        if sccss:
             print("✅ Setup completed successfully.")
         else:
             print("⚠️  Setup finished with warnings or errors.")
