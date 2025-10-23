@@ -2,7 +2,7 @@ from prompt_toolkit.formatted_text import ANSI
 import os
 
 class Prompt:
-    x @staticmethod
+    @staticmethod
     def get_prompt(user: str, case: str | None = None) -> ANSI:
         cwd = os.path.basename(os.getcwd()) or "/"
 

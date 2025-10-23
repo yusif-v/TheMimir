@@ -2,13 +2,19 @@ import os
 import subprocess
 from typing import Dict, Tuple, Any
 from .history import HistoryManager
+import logging
+
+logger = logging.getLogger("Mimir")
+logger.setLevel(logging.INFO)
+logfile = os.path.expanduser("~/Mimir/Logs/mimir.log")
+os.makedirs(os.path.dirname(logfile), exist_ok=True)
+handler = logging.FileHandler(logfile)
+formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
 
 class CommandHandler:
-    """
-    Handles user commands for the Mimir forensic terminal.
-    Dispatches built-in commands and integration lookups.
-    """
-
     def __init__(self, history_manager: HistoryManager, integrations: Dict[str, Any]):
         self.history_manager = history_manager
         self.integrations = integrations
@@ -65,7 +71,6 @@ class CommandHandler:
 
         mb = self.integrations.get("malwareBazaar")
 
-        # --- Hash string lookup mode ---
         if "-h" in args:
             try:
                 idx = args.index("-h")
@@ -80,14 +85,12 @@ class CommandHandler:
             mb.mb_lookup(hash_value)
             return
 
-        # --- File hashing mode ---
         file_path = args[0]
         if not os.path.exists(file_path):
             print(f"File not found: {file_path}")
             return
 
         try:
-            # compute SHA256 hash cross-platform
             import hashlib
             sha256 = hashlib.sha256()
             with open(file_path, "rb") as f:
