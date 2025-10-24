@@ -131,4 +131,4 @@ if __name__ == "__main__":
         if sccss:
             print("✅ Setup completed successfully.")
         else:
-            print("⚠️  Setup finished with warnings or errors.")
+            print("⚠️ Setup finished with warnings or errors.")
