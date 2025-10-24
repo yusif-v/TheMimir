@@ -115,7 +115,6 @@ class SetupManager:
         visible_msgs = [m for m in messages if "✅" not in m and "already installed" not in m]
         return success, visible_msgs
 
-
 # -------------------------------------------------------------
 # CLI entry point (for standalone runs)
 # -------------------------------------------------------------
